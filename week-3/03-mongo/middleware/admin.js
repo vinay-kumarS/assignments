@@ -1,11 +1,12 @@
 const mongoose = require("mongoose");
 
 mongoose.connect(
-  "mongodb+srv://satrasalavinaykumar01:qqK5QCuOFldjG7hj@cluster0.zkkqicn.mongodb.net/adminLogin"
-    
-);
+    "mongodb+srv://satrasalavinaykumar01:qqK5QCuOFldjG7hj@cluster0.zkkqicn.mongodb.net/adminLogin"
+  );
+const admin = require("../Schema/Admin.js");
+const course = require("../Schema/Course.js");
 
-const admin = mongoose.model("admin",{username:String,password:String})
+
 
 // Middleware for handling auth
 function adminMiddleware(req, res, next) {
