@@ -1,57 +1,46 @@
 const { Router } = require("express");
 const adminMiddleware = require("../middleware/admin");
 const router = Router();
-const express = require("express");
-const mongoose = require("mongoose");
+const {Admin , Course} = require("../db/index.js");
 
-const app = express();
-app.use(express.json());
-
-mongoose.connect(
-  "mongodb+srv://satrasalavinaykumar01:qqK5QCuOFldjG7hj@cluster0.zkkqicn.mongodb.net/adminLogin"
-);
-const admin = require("../Schema/Admin.js");
-const course = require("../Schema/Course.js");
 
 // Admin Routes
-app.post("/signup", (req, res) => {
+router.post("/signup", (req, res) => {
   // Implement admin signup logic
-  admin.create({
+  Admin.create({
     username: req.body.username,
     password: req.body.password,
   });
 
   res.json({
-    message: "admin account created successfully....!",
+    message: "admin created successfully....!",
   });
+
 });
 
-app.post("/courses", adminMiddleware, (req, res) => {
+router.post("/courses", adminMiddleware,async (req, res) => {
   // Implement course creation logic
 
-  const temp = course.create({
+  const newCourse = await Course.create({
     title: req.body.title,
     description: req.body.description,
     price: req.body.price,
     image: req.body.image,
   });
 
-  res.json(temp);
-});
-app.get("/courses", adminMiddleware, (req, res) => {
-  // Implement fetching all courses logic
-  async function check() {
-    const courses = await course.find();
+  res.json({
+    msg : "Course Added suceessfully....!",
+    courseId : newCourse._id
+  });
 
-    res.json({
-      Courses: courses,
-    });
-  }
-  check();
+});
+router.get("/courses", adminMiddleware,async (req, res) => {  
+  // Implement fetching all courses logic
+  const courses = await Course.find({});
+
+  res.json({
+    Courses : courses
+  })
 });
 
 module.exports = router;
-
-// app.listen(3000, () => {
-//   console.log("on port 3000");
-// });

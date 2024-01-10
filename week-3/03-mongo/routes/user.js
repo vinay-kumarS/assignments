@@ -1,21 +1,12 @@
 const { Router } = require("express");
 const router = Router();
 const userMiddleware = require("../middleware/user");
-const mongoose = require("mongoose");
-
-router.use(Router.json());
-
-mongoose.connect(
-    "mongodb+srv://satrasalavinaykumar01:qqK5QCuOFldjG7hj@cluster0.zkkqicn.mongodb.net/userLogin"
-);
-
-const user = require("../Schema/User.js");
-const course = require("../Schema/Course.js");
+const {User , Course} = require("../db/index.js");
 
 // User Routes
 router.post('/signup', (req, res) => {
     // Implement user signup logic
-    user.create({
+    User.create({
         username : req.body.username,
         password : req.body.password
     });
@@ -25,23 +16,47 @@ router.post('/signup', (req, res) => {
     });
 });
 
-router.get('/courses', (req, res) => {
-    // Implement listing all courses logic
-    async function check(){
-        const courses = await course.find();
-        res.json({
-            "msg" : courses
-        });
-    }
-    check();
-});
+router.get("/courses", userMiddleware,async (req, res) => {
+    // Implement fetching all courses logic
+    const courses = await Course.find({});
+  
+    res.json({
+      Courses : courses
+    })
+  });
 
-router.post('/courses/:courseId', userMiddleware, (req, res) => {
+router.post('/courses/:courseId', userMiddleware,async (req, res) => {
     // Implement course purchase logic
+    const courseId = req.params.courseId;
+    const username =  req.headers.username;
+    await User.updateOne({
+        username : username
+    }, {
+        "$push" : {
+        purchasedCourses : courseId
+        }
+    });
+
+
+    res.json({
+        msg : "Purchase success.....!"
+    });
+
 });
 
-router.get('/purchasedCourses', userMiddleware, (req, res) => {
+router.get('/purchasedCourses', userMiddleware, async (req, res) => {
     // Implement fetching purchased courses logic
+    const username = req.headers.username;
+    const user =  await User.findOne({username : username});
+    const courses = await Course.find({
+        _id : {
+            "$in" : user.purchasedCourses
+        }
+    })
+
+    res.json({
+        "Purchases" : courses
+    });
 });
 
 module.exports = router
